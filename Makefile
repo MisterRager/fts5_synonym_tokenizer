@@ -10,7 +10,7 @@ SQLITE_URL      := http://www.sqlite.org/$(SQLITE_YEAR)/$(SQLITE_BASENAME).zip
 CC = gcc
 CPP = g++
 
-LIB = -lpthread -ldl
+LIB = 
 
 UNAME_S := $(shell uname -s)
 
@@ -21,10 +21,10 @@ else
 endif
 
 ${LIBNAME}: sqlite3.so
-	${CPP} src/SynonymTokenizer.cpp -c -o ${LIBNAME} -I build/
+	${CPP} src/SynonymTokenizer.cpp -c -o ${LIBNAME} -I build/ -fPIC
 
 sqlite3.so: build/sqlite3.c
-	${CC} $^ -c ${LIB} -o $@ 
+	${CC} $^ -c ${LIB} -o $@ -fPIC
 
 # Unpack
 build/sqlite3.c: $(SQLITE_BASENAME).zip
