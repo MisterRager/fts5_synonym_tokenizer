@@ -121,8 +121,7 @@ int xCreate(void *pCtx, const char **azArg, int nArg, Fts5Tokenizer **ppOut) {
 
 int xTokenize(Fts5Tokenizer *tokenizer_ptr, void *pCtx, int flags, const char *pText, int nText, xTokenFn xToken){
   SynonymTokenizer *tokenizer = reinterpret_cast<SynonymTokenizer*>(tokenizer_ptr);
-  //return tokenizer->tokenize
-  return 0;
+  return tokenizer->tokenize(flags, pText, nText, xToken);
 }
 
 void xDelete(Fts5Tokenizer *tokenizer_ptr) {
