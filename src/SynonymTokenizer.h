@@ -24,7 +24,8 @@ class SynonymTokenizer {
 
 fts5_api *fts5_api_from_db(sqlite3 *db);
 
-extern "C" int xCreate(void *sqlite3, const char **azArg, int nArg, Fts5Tokenizer **ppOut);
-extern "C" int xTokenize(Fts5Tokenizer *tokenizer_ptr, void *pCtx, int flags, const char *pText, int nText, xTokenFn xToken);
-extern "C" void xDelete(Fts5Tokenizer *tokenizer_ptr);
+extern "C" int fts5_synonyms_xCreate(void *sqlite3, const char **azArg, int nArg, Fts5Tokenizer **ppOut);
+extern "C" int fts5_synonyms_xTokenize(Fts5Tokenizer *tokenizer_ptr, void *pCtx, int flags, const char *pText, int nText, xTokenFn xToken);
+extern "C" void fts5_synonyms_xDelete(Fts5Tokenizer *tokenizer_ptr);
 extern "C" int xtoken_unicode61_callback(void *pCtx, int tflags, const char* pToken, int nToken, int iStart, int iEnd);
+extern "C" int sqlite3_synonymtokenizer_init(sqlite3 *db, char **pzErrMsg, const sqlite3_api_routines *pApi);

@@ -86,7 +86,7 @@ int SynonymTokenizer::findSynonyms(void* tokenContext, int flags, const char *to
   return sqlite3_finalize(stmt);
 }
 
-int xCreate(void *pCtx, const char **azArg, int nArg, Fts5Tokenizer **ppOut) {
+int fts5_synonyms_xCreate(void *pCtx, const char **azArg, int nArg, Fts5Tokenizer **ppOut) {
   int rc;
   sqlite3 *db = reinterpret_cast<sqlite3*>(pCtx);
   fts5_api *fts5 = fts5_api_from_db(db);
@@ -119,12 +119,12 @@ int xCreate(void *pCtx, const char **azArg, int nArg, Fts5Tokenizer **ppOut) {
   return SQLITE_OK;
 }
 
-int xTokenize(Fts5Tokenizer *tokenizer_ptr, void *pCtx, int flags, const char *pText, int nText, xTokenFn xToken){
+int fts5_synonyms_xTokenize(Fts5Tokenizer *tokenizer_ptr, void *pCtx, int flags, const char *pText, int nText, xTokenFn xToken){
   SynonymTokenizer *tokenizer = reinterpret_cast<SynonymTokenizer*>(tokenizer_ptr);
   return tokenizer->tokenize(flags, pText, nText, xToken);
 }
 
-void xDelete(Fts5Tokenizer *tokenizer_ptr) {
+void fts5_synonyms_xDelete(Fts5Tokenizer *tokenizer_ptr) {
   SynonymTokenizer *tokenizer = reinterpret_cast<SynonymTokenizer*>(tokenizer_ptr);
   tokenizer->~SynonymTokenizer();
   sqlite3_free(tokenizer_ptr);
@@ -146,4 +146,14 @@ fts5_api *fts5_api_from_db(sqlite3 *db){
 
   sqlite3_finalize(pStmt);
   return pRet;
+}
+
+int sqlite3_synonymtokenizer_init(sqlite3 *db, char **pzErrMsg, const sqlite3_api_routines *pApi) {
+  fts5_tokenizer tokenizer = {fts5_synonyms_xCreate, fts5_synonyms_xDelete, fts5_synonyms_xTokenize};
+  fts5_api *fts5 = fts5_api_from_db(db);
+
+  SQLITE_EXTENSION_INIT2(pApi);
+  fts5->xCreateTokenizer(fts5, "synonyms", db, &tokenizer, NULL);
+  
+  return SQLITE_OK;
 }
