@@ -10,21 +10,29 @@ SQLITE_URL      := http://www.sqlite.org/$(SQLITE_YEAR)/$(SQLITE_BASENAME).zip
 CC = gcc
 CPP = g++
 
-LIB = 
+LIB = -ldl -lpthread 
+SHELL_FLAGS = \
+-DSQLITE_DEBUG \
+-DSQLITE_ENABLE_EXPLAIN_COMMENTS \
+-DSQLITE_ENABLE_SELECTTRACE \
+-DSQLITE_ENABLE_WHERETRACE
+
 
 UNAME_S := $(shell uname -s)
 
 ifeq ($(UNAME_S),Darwin)
 	LIBNAME := synonym_tokenizer.dylib
+	SHAREDNAME := sqlite3.dylib
 else
 	LIBNAME := synonym_tokenizer.so
+	SHAREDNAME := sqlite3.so
 endif
 
-${LIBNAME}: sqlite3.so
-	${CPP} src/SynonymTokenizer.cpp -c -o ${LIBNAME} -I build/ -fPIC
+${LIBNAME}: ${SHAREDNAME}
+	${CPP} src/SynonymTokenizer.cpp -shared -rdynamic -o ${LIBNAME} -I build/ -fPIC ${LIB} ${SHELL_FLAGS}
 
-sqlite3.so: build/sqlite3.c
-	${CC} $^ -c ${LIB} -o $@ -fPIC
+${SHAREDNAME}: build/sqlite3.c
+	${CC} $^ -c -o $@ -fPIC
 
 # Unpack
 build/sqlite3.c: $(SQLITE_BASENAME).zip
@@ -37,12 +45,15 @@ build/sqlite3.c: $(SQLITE_BASENAME).zip
 $(SQLITE_BASENAME).zip:
 	wget -N -c "$(SQLITE_URL)"
 
+sqlite3-shell: build/sqlite3.c
+	${CC} build/sqlite3.c build/shell.c ${LIB} -o $@ ${SHELL_FLAGS}
+
 clean:
 	rm -f "$(SQLITE_BASENAME).zip"
 	rm -rf "$(SQLITE_BASENAME)"
 	rm -rf build
 	rm -rf obj
 	rm -rf libs
-	rm -f synonym_tokenizer.so
-	rm -f sqlite3.so
-
+	rm -f ${LIBNAME}
+	rm -f ${SHAREDNAME}
+	rm -f sqlite3-shell
